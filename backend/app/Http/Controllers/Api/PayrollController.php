@@ -62,4 +62,45 @@ class PayrollController extends Controller
             'data'    => $payroll->load('employee')
         ], 201);
     }
+
+    /**
+     * Automated Batch Processor: Generates payroll for all valid, active employees.
+     */
+    public function initiateMonthlyPayroll(string $targetDate)
+    {
+        $employees = Employee::whereNot('employment_status', 'Resigned')
+            ->with('salary')
+            ->get();
+
+        $processedCount = 0;
+
+        foreach ($employees as $employee) {
+            if (!$employee->salary) {
+                continue;
+            }
+
+            $basicSalary = $employee->salary->basic_salary;
+            $allowance   = $employee->salary->allowance;
+            $deductions  = $employee->salary->deductions;
+            $netSalary   = $basicSalary + $allowance - $deductions;
+
+
+            Payroll::updateOrCreate(
+                [
+                    'employee_id'  => $employee->id,
+                    'payroll_date' => $targetDate,
+                ],
+                [
+                    'basic_salary' => $basicSalary,
+                    'allowance'    => $allowance,
+                    'deductions'   => $deductions,
+                    'net_salary'   => $netSalary,
+                ]
+            );
+
+            $processedCount++;
+        }
+
+        return $processedCount;
+    }
 }
