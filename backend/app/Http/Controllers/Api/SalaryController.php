@@ -10,32 +10,70 @@ use Illuminate\Http\Request;
 class SalaryController extends Controller
 {
     /**
-     * Store or update the salary configuration for an employee.
+     * Store a newly created salary configuration for an employee.
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'employee_id'  => 'required|integer|exists:employees,id',
+            'employee_id'  => 'required|integer|unique:salaries,employee_id|exists:employees,id',
             'basic_salary' => 'required|numeric|min:0',
             'allowance'    => 'required|numeric|min:0',
             'deductions'   => 'required|numeric|min:0',
         ]);
 
-        // Calculate net salary based on business rules
+        // Calculate net salary based on basic business rules
         $netSalary = $validated['basic_salary'] + $validated['allowance'] - $validated['deductions'];
 
-        // Find existing salary record or initialize a new instance
-        $salary = Salary::firstOrNew(['employee_id' => $validated['employee_id']]);
-
-        // Assign computed and validated data
-        $salary->basic_salary = $validated['basic_salary'];
-        $salary->allowance    = $validated['allowance'];
-        $salary->deductions   = $validated['deductions'];
-        $salary->net_salary   = $netSalary;
-        $salary->save();
+        $salary = Salary::create([
+            'employee_id'  => $validated['employee_id'],
+            'basic_salary' => $validated['basic_salary'],
+            'allowance'    => $validated['allowance'],
+            'deductions'   => $validated['deductions'],
+            'net_salary'   => $netSalary,
+        ]);
 
         return response()->json([
-            'message' => 'Salary details processed successfully!',
+            'message' => 'Salary configuration created successfully!',
+            'data'    => $salary
+        ], 201);
+    }
+
+    /**
+     * Update an existing salary configuration using the employee_id.
+     */
+    public function update(Request $request, string $employeeId)
+    {
+        // Find the target salary configuration record
+        $salary = Salary::where('employee_id', $employeeId)->first();
+
+        if (!$salary) {
+            return response()->json(['message' => 'Salary record not found for this employee'], 404);
+        }
+
+        // Validate incoming payload (fields are optional via 'sometimes')
+        $validated = $request->validate([
+            'basic_salary' => 'sometimes|required|numeric|min:0',
+            'allowance'    => 'sometimes|required|numeric|min:0',
+            'deductions'   => 'sometimes|required|numeric|min:0',
+        ]);
+
+        // Fallback to existing record values if a field isn't passed in the update request
+        $basicSalary = $validated['basic_salary'] ?? $salary->basic_salary;
+        $allowance   = $validated['allowance'] ?? $salary->allowance;
+        $deductions  = $validated['deductions'] ?? $salary->deductions;
+        
+        // Compute updated flat net take-home calculation
+        $netSalary = $basicSalary + $allowance - $deductions;
+
+        $salary->update([
+            'basic_salary' => $basicSalary,
+            'allowance'    => $allowance,
+            'deductions'   => $deductions,
+            'net_salary'   => $netSalary,
+        ]);
+
+        return response()->json([
+            'message' => 'Salary configuration updated successfully!',
             'data'    => $salary
         ], 200);
     }
