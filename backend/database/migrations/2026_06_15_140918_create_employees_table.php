@@ -13,13 +13,17 @@ return new class extends Migration
     {
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
+            $table->string('full_name');
+            $table->string('email')->unique();
+            $table->string('contact_number');
+            $table->string('position');
+            $table->string('department');
+            $table->date('date_hired');
+            $table->string('employment_status');
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('employees');
