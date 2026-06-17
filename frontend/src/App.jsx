@@ -3,6 +3,7 @@ import { AuthProvider } from "./context/AuthProvider";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 import LoginPage from "./pages/Login/LoginPage";
 import DashboardPage from "./pages/Dashboard/DashboardPage";
+import EmployeesPage from "./pages/Employees/EmployeesPage";
 
 export default function App() {
   return (
@@ -12,6 +13,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<DashboardPage />} />
+            <Route path="/employees" element={<EmployeesPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
