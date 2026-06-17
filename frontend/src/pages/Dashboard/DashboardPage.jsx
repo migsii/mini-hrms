@@ -1,9 +1,27 @@
 import { useState, useEffect } from "react";
 import MainLayout from "../../components/layout/MainLayout";
+import DataTable from "../../components/ui/DataTable/DataTable";
+import Badge from "../../components/ui/Badge/Badge";
 import { getEmployees } from "../../api/employees";
 import { getPayrolls } from "../../api/payrolls";
 import { formatCurrency } from "../../utils/formatters";
 import styles from "./DashboardPage.module.css";
+
+const COLUMNS = [
+  {
+    key: "id",
+    label: "Employee ID",
+    render: (row) => `EMP-${String(row.id).padStart(4, "0")}`,
+  },
+  { key: "full_name", label: "Full Name" },
+  { key: "position", label: "Position" },
+  { key: "department", label: "Department" },
+  {
+    key: "employment_status",
+    label: "Status",
+    render: (row) => <Badge status={row.employment_status} />,
+  },
+];
 
 export default function DashboardPage() {
   const [employees, setEmployees] = useState([]);
@@ -20,10 +38,8 @@ export default function DashboardPage() {
         ]);
         setEmployees(empRes.data);
         setPayrolls(payRes.data);
-      } catch (err) {
-        setError(
-          err.response?.data?.message || "Failed to load dashboard data.",
-        );
+      } catch {
+        setError("Failed to load dashboard data.");
       } finally {
         setLoading(false);
       }
@@ -32,7 +48,6 @@ export default function DashboardPage() {
     fetchData();
   }, []);
 
-  // Derived stats from employee list
   const totalEmployees = employees.length;
   const activeEmployees = employees.filter(
     (e) => e.employment_status === "Active",
@@ -40,88 +55,69 @@ export default function DashboardPage() {
   const onLeaveEmployees = employees.filter(
     (e) => e.employment_status === "On Leave",
   ).length;
-
-  // Total monthly payroll — sum of all net_salary in payrolls
   const totalPayroll = payrolls.reduce(
     (sum, p) => sum + parseFloat(p.net_salary ?? 0),
     0,
   );
 
   const CARDS = [
-    {
-      label: "Total Employees",
-      value: loading ? "—" : totalEmployees,
-      accent: "blue",
-    },
-    {
-      label: "Active Employees",
-      value: loading ? "—" : activeEmployees,
-      accent: "green",
-    },
-    {
-      label: "Employees on Leave",
-      value: loading ? "—" : onLeaveEmployees,
-      accent: "yellow",
-    },
+    { label: "Total Employees", value: totalEmployees, accent: "blue" },
+    { label: "Active Employees", value: activeEmployees, accent: "green" },
+    { label: "Employees on Leave", value: onLeaveEmployees, accent: "yellow" },
     {
       label: "Total Monthly Payroll",
-      value: loading ? "—" : formatCurrency(totalPayroll),
+      value: formatCurrency(totalPayroll),
       accent: "blue",
     },
   ];
+
+  const renderEmployeeCard = (emp) => (
+    <>
+      <div className={styles.cardHeader}>
+        <div>
+          <p className={styles.cardName}>{emp.full_name}</p>
+          <p className={styles.cardSub}>
+            EMP-{String(emp.id).padStart(4, "0")} · {emp.position}
+          </p>
+        </div>
+        <Badge status={emp.employment_status} />
+      </div>
+      <div className={styles.cardBody}>
+        <div className={styles.cardRow}>
+          <span className={styles.cardLabel}>Department</span>
+          <span>{emp.department}</span>
+        </div>
+      </div>
+    </>
+  );
 
   return (
     <MainLayout title="Dashboard">
       {error && <div className={styles.error}>{error}</div>}
 
+      {/* Stat Cards */}
       <div className={styles.grid}>
         {CARDS.map(({ label, value, accent }) => (
           <div
             key={label}
-            className={`${styles.card} ${styles[`accent--${accent}`]}`}
+            className={`${styles.statCard} ${styles[`accent--${accent}`]}`}
           >
-            <p className={styles.cardLabel}>{label}</p>
-            <p className={styles.cardValue}>{value}</p>
+            <p className={styles.statLabel}>{label}</p>
+            <p className={styles.statValue}>{loading ? "—" : value}</p>
           </div>
         ))}
       </div>
 
+      {/* Recent Employees */}
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>Recent Employees</h3>
-        {loading ? (
-          <p className={styles.empty}>Loading...</p>
-        ) : employees.length === 0 ? (
-          <p className={styles.empty}>No employees found.</p>
-        ) : (
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Employee ID</th>
-                <th>Full Name</th>
-                <th>Position</th>
-                <th>Department</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {employees.slice(0, 5).map((emp) => (
-                <tr key={emp.id}>
-                  <td>EMP-{String(emp.id).padStart(4, "0")}</td>
-                  <td>{emp.full_name}</td>
-                  <td>{emp.position}</td>
-                  <td>{emp.department}</td>
-                  <td>
-                    <span
-                      className={`${styles.badge} ${styles[`badge--${emp.employment_status.toLowerCase().replace(" ", "-")}`]}`}
-                    >
-                      {emp.employment_status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+        <DataTable
+          columns={COLUMNS}
+          data={employees.slice(0, 5)}
+          loading={loading}
+          emptyMessage="No employees found."
+          renderCard={renderEmployeeCard}
+        />
       </div>
     </MainLayout>
   );
