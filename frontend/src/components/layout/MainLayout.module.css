@@ -1,10 +1,10 @@
 .shell {
   display: flex;
   min-height: 100vh;
+  position: relative;
 }
 
 .main {
-  margin-left: var(--sidebar-width);
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -12,6 +12,27 @@
 }
 
 .content {
-  padding: var(--space-8);
+  padding: var(--space-4);
   flex: 1;
+}
+
+.mobileOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 99;
+}
+
+@media (min-width: 768px) {
+  .main {
+    margin-left: var(--sidebar-width);
+  }
+
+  .mobileOverlay {
+    display: none;
+  }
+
+  .content {
+    padding: var(--space-8);
+  }
 }
