@@ -1,0 +1,37 @@
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge--active {
+  background: #dcfce7;
+  color: var(--color-success);
+}
+.badge--on-leave {
+  background: #fef9c3;
+  color: var(--color-warning);
+}
+.badge--resigned {
+  background: #fee2e2;
+  color: var(--color-danger);
+}
+.badge--present {
+  background: #dcfce7;
+  color: var(--color-success);
+}
+.badge--late {
+  background: #fef9c3;
+  color: var(--color-warning);
+}
+.badge--absent {
+  background: #fee2e2;
+  color: var(--color-danger);
+}
+.badge--default {
+  background: #f1f5f9;
+  color: var(--color-text-muted);
+}
