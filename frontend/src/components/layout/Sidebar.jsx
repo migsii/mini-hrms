@@ -10,7 +10,7 @@ const NAV_ITEMS = [
   { to: "/payroll", label: "Payroll" },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }) {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
@@ -19,11 +19,18 @@ export default function Sidebar() {
     navigate("/login");
   };
 
+  const handleNavClick = () => {
+    onClose?.();
+  };
+
   return (
-    <aside className={styles.sidebar}>
+    <aside className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ""}`}>
       <div className={styles.brand}>
         <div className={styles.logo}>HR</div>
         <span className={styles.brandName}>SmartRetail</span>
+        <button className={styles.closeBtn} onClick={onClose}>
+          ✕
+        </button>
       </div>
 
       <nav className={styles.nav}>
@@ -32,6 +39,7 @@ export default function Sidebar() {
             key={to}
             to={to}
             end={to === "/"}
+            onClick={handleNavClick}
             className={({ isActive }) =>
               `${styles.navItem} ${isActive ? styles.navItemActive : ""}`
             }

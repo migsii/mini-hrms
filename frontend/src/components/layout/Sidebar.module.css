@@ -8,6 +8,12 @@
   top: 0;
   left: 0;
   z-index: 100;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+}
+
+.sidebarOpen {
+  transform: translateX(0);
 }
 
 .brand {
@@ -36,7 +42,21 @@
   color: #ffffff;
   font-size: var(--text-base);
   font-weight: 600;
-  letter-spacing: 0.01em;
+  flex: 1;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: var(--text-lg);
+  cursor: pointer;
+  padding: var(--space-1);
+  line-height: 1;
+}
+
+.closeBtn:hover {
+  color: #ffffff;
 }
 
 .nav {
@@ -90,4 +110,14 @@
 .logout:hover {
   background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
+}
+
+@media (min-width: 768px) {
+  .sidebar {
+    transform: translateX(0);
+  }
+
+  .closeBtn {
+    display: none;
+  }
 }
