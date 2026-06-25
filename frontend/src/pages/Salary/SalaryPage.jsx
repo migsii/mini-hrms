@@ -2,7 +2,12 @@ import { useState, useEffect } from "react";
 import MainLayout from "../../components/layout/MainLayout";
 import DataTable from "../../components/ui/DataTable/DataTable";
 import { getEmployees } from "../../api/employees";
-import { getSalary, createSalary, updateSalary } from "../../api/salaries";
+import {
+  getSalaries,
+  getSalary,
+  createSalary,
+  updateSalary,
+} from "../../api/salaries";
 import { formatCurrency } from "../../utils/formatters";
 import styles from "./SalaryPage.module.css";
 
@@ -28,20 +33,21 @@ export default function SalaryPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const empRes = await getEmployees();
-        const emps = empRes.data;
-        setEmployees(emps);
+        const [empRes, salaryRes] = await Promise.all([
+          getEmployees(),
+          getSalaries(),
+        ]);
 
-        const salaryResults = await Promise.allSettled(
-          emps.map((emp) => getSalary(emp.id)),
-        );
+        const emps = empRes.data;
+        const salaries = salaryRes.data;
 
         const map = {};
-        salaryResults.forEach((result, i) => {
-          if (result.status === "fulfilled" && result.value.data) {
-            map[emps[i].id] = result.value.data;
-          }
+
+        salaries.forEach((salary) => {
+          map[salary.employee_id] = salary;
         });
+
+        setEmployees(emps);
         setSalaryMap(map);
       } catch {
         setError("Failed to load salary data.");
