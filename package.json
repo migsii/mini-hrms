@@ -6,7 +6,11 @@
     "install:backend": "cd backend && composer install",
     "setup:backend": "cd backend && if not exist .env copy .env.example .env && php artisan key:generate",
     "install:all": "npm run install:frontend && npm run install:backend && npm run setup:backend",
-    "dev": "concurrently \"npm --prefix frontend run dev\" \"cd backend && php artisan serve\""
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "cd backend && php artisan serve",
+    "lint:frontend": "npm --prefix frontend run lint",
+    "build:frontend": "npm --prefix frontend run build",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\""
   },
   "devDependencies": {
     "concurrently": "^9.0.0"
