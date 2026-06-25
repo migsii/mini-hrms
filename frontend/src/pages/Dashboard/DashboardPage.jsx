@@ -48,6 +48,12 @@ export default function DashboardPage() {
     fetchData();
   }, []);
 
+  const activeEmployeeIds = new Set(
+    employees
+      .filter((e) => e.employment_status !== "Resigned")
+      .map((e) => e.id),
+  );
+
   const totalEmployees = employees.length;
   const activeEmployees = employees.filter(
     (e) => e.employment_status === "Active",
@@ -55,10 +61,9 @@ export default function DashboardPage() {
   const onLeaveEmployees = employees.filter(
     (e) => e.employment_status === "On Leave",
   ).length;
-  const totalPayroll = payrolls.reduce(
-    (sum, p) => sum + parseFloat(p.net_salary ?? 0),
-    0,
-  );
+  const totalPayroll = payrolls
+    .filter((p) => activeEmployeeIds.has(p.employee_id))
+    .reduce((sum, p) => sum + parseFloat(p.net_salary ?? 0), 0);
 
   const CARDS = [
     { label: "Total Employees", value: totalEmployees, accent: "blue" },
@@ -113,7 +118,9 @@ export default function DashboardPage() {
         <h3 className={styles.sectionTitle}>Recent Employees</h3>
         <DataTable
           columns={COLUMNS}
-          data={employees.slice(0, 5)}
+          data={employees
+            .filter((e) => e.employment_status !== "Resigned")
+            .slice(0, 5)}
           loading={loading}
           emptyMessage="No employees found."
           renderCard={renderEmployeeCard}
