@@ -27,7 +27,7 @@ export default function Sidebar({ isOpen, onClose }) {
     <aside className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ""}`}>
       <div className={styles.brand}>
         <div className={styles.logo}>HR</div>
-        <span className={styles.brandName}>SmartRetail</span>
+        <span className={styles.brandName}>Mini HRMS</span>
         <button className={styles.closeBtn} onClick={onClose}>
           ✕
         </button>
