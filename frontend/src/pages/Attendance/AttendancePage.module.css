@@ -161,9 +161,14 @@
 .cardHeader {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
   margin-bottom: var(--space-3);
 }
 
+.cardHeader > div:first-child {
+  min-width: 0;
+}
 .cardName {
   font-size: var(--text-base);
   font-weight: 600;
@@ -190,4 +195,10 @@
 .cardLabel {
   color: var(--color-text-muted);
   font-weight: 500;
+}
+@media (max-width: 640px) {
+  .cardHeader {
+    flex-direction: row;
+    align-items: flex-start;
+  }
 }
