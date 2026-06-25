@@ -1,7 +1,11 @@
 {
-  "name": "hr-payroll-system",
+  "name": "mini-hrms",
   "private": true,
   "scripts": {
+    "install:frontend": "npm --prefix frontend install",
+    "install:backend": "cd backend && composer install",
+    "setup:backend": "cd backend && if not exist .env copy .env.example .env && php artisan key:generate",
+    "install:all": "npm run install:frontend && npm run install:backend && npm run setup:backend",
     "dev": "concurrently \"npm --prefix frontend run dev\" \"cd backend && php artisan serve\""
   },
   "devDependencies": {
