@@ -7,4 +7,4 @@ const api = axios.create({
 
 export const createSalary = (data) => api.post("/salaries", data);
 export const updateSalary = (id, data) => api.put(`/salaries/${id}`, data);
-export const getSalaries = (id) => api.get(`/salaries/${id}`);
+export const getSalary = (id) => api.get(`/salaries/${id}`);

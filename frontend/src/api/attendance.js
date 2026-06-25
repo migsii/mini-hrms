@@ -5,5 +5,5 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-export const createAttendance = (data) => api.post("/attendance", data);
-export const getAttendance = () => api.get(`/attendance/`);
+export const createAttendance = (data) => api.post("/attendances", data);
+export const getAttendance = () => api.get(`/attendances/`);
