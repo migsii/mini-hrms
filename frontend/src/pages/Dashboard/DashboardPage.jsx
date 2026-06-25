@@ -1,27 +1,20 @@
 import { useState, useEffect } from "react";
 import MainLayout from "../../components/layout/MainLayout";
-import DataTable from "../../components/ui/DataTable/DataTable";
-import Badge from "../../components/ui/Badge/Badge";
 import { getEmployees } from "../../api/employees";
 import { getPayrolls } from "../../api/payrolls";
 import { formatCurrency } from "../../utils/formatters";
 import styles from "./DashboardPage.module.css";
 
-const COLUMNS = [
-  {
-    key: "id",
-    label: "Employee ID",
-    render: (row) => `EMP-${String(row.id).padStart(4, "0")}`,
-  },
-  { key: "full_name", label: "Full Name" },
-  { key: "position", label: "Position" },
-  { key: "department", label: "Department" },
-  {
-    key: "employment_status",
-    label: "Status",
-    render: (row) => <Badge status={row.employment_status} />,
-  },
-];
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Cell,
+} from "recharts";
 
 export default function DashboardPage() {
   const [employees, setEmployees] = useState([]);
@@ -36,6 +29,7 @@ export default function DashboardPage() {
           getEmployees(),
           getPayrolls(),
         ]);
+
         setEmployees(empRes.data);
         setPayrolls(payRes.data);
       } catch {
@@ -55,76 +49,146 @@ export default function DashboardPage() {
   );
 
   const totalEmployees = employees.length;
+
   const activeEmployees = employees.filter(
     (e) => e.employment_status === "Active",
   ).length;
+
   const onLeaveEmployees = employees.filter(
     (e) => e.employment_status === "On Leave",
   ).length;
+
+  const resignedEmployees = employees.filter(
+    (e) => e.employment_status === "Resigned",
+  ).length;
+
   const totalPayroll = payrolls
     .filter((p) => activeEmployeeIds.has(p.employee_id))
-    .reduce((sum, p) => sum + parseFloat(p.net_salary ?? 0), 0);
+    .reduce((sum, p) => sum + Number(p.net_salary || 0), 0);
 
-  const CARDS = [
-    { label: "Total Employees", value: totalEmployees, accent: "blue" },
-    { label: "Active Employees", value: activeEmployees, accent: "green" },
-    { label: "Employees on Leave", value: onLeaveEmployees, accent: "yellow" },
+  const statusData = [
     {
-      label: "Total Monthly Payroll",
-      value: formatCurrency(totalPayroll),
-      accent: "blue",
+      status: "Active",
+      employees: activeEmployees,
+    },
+    {
+      status: "On Leave",
+      employees: onLeaveEmployees,
+    },
+    {
+      status: "Resigned",
+      employees: resignedEmployees,
     },
   ];
 
-  const renderEmployeeCard = (emp) => (
-    <>
-      <div className={styles.cardHeader}>
-        <div>
-          <p className={styles.cardName}>{emp.full_name}</p>
-          <p className={styles.cardSub}>
-            EMP-{String(emp.id).padStart(4, "0")} · {emp.position}
-          </p>
-        </div>
-        <Badge status={emp.employment_status} />
-      </div>
-      <div className={styles.cardBody}>
-        <div className={styles.cardRow}>
-          <span className={styles.cardLabel}>Department</span>
-          <span>{emp.department}</span>
-        </div>
-      </div>
-    </>
+  const departmentMap = {};
+
+  employees.forEach((emp) => {
+    if (emp.employment_status === "Resigned") return;
+
+    departmentMap[emp.department] = (departmentMap[emp.department] || 0) + 1;
+  });
+
+  const departmentData = Object.entries(departmentMap).map(
+    ([department, employees]) => ({
+      department,
+      employees,
+    }),
   );
+
+  const cards = [
+    {
+      label: "Total Employees",
+      value: totalEmployees,
+    },
+    {
+      label: "Active Employees",
+      value: activeEmployees,
+    },
+    {
+      label: "Employees on Leave",
+      value: onLeaveEmployees,
+    },
+    {
+      label: "Monthly Payroll",
+      value: formatCurrency(totalPayroll),
+    },
+  ];
+
+  const STATUS_COLORS = {
+    Active: "#22c55e",
+    "On Leave": "#f59e0b",
+    Resigned: "#ef4444",
+  };
+
+  const DEPARTMENT_COLORS = [
+    "#3b82f6",
+    "#8b5cf6",
+    "#ec4899",
+    "#10b981",
+    "#f59e0b",
+    "#ef4444",
+    "#06b6d4",
+    "#6366f1",
+  ];
 
   return (
     <MainLayout title="Dashboard">
       {error && <div className={styles.error}>{error}</div>}
 
-      {/* Stat Cards */}
       <div className={styles.grid}>
-        {CARDS.map(({ label, value, accent }) => (
+        {cards.map(({ label, value, accent }) => (
           <div
             key={label}
             className={`${styles.statCard} ${styles[`accent--${accent}`]}`}
           >
             <p className={styles.statLabel}>{label}</p>
-            <p className={styles.statValue}>{loading ? "—" : value}</p>
+            <h2 className={styles.statValue}>{loading ? "—" : value}</h2>
           </div>
         ))}
       </div>
 
-      {/* Recent Employees */}
-      <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>Recent Employees</h3>
-        <DataTable
-          columns={COLUMNS}
-          data={employees
-            .filter((e) => e.employment_status !== "Resigned")
-            .slice(0, 5)}
-          loading={loading}
-          emptyMessage="No employees found."
-          renderCard={renderEmployeeCard}
-        />
+      <div className={styles.chartGrid}>
+        <div className={styles.panel}>
+          <h3>Employment Status</h3>
+
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={statusData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="status" />
+              <YAxis allowDecimals={false} />
+              <Tooltip />
+
+              <Bar dataKey="employees" radius={[8, 8, 0, 0]}>
+                {statusData.map((entry) => (
+                  <Cell key={entry.status} fill={STATUS_COLORS[entry.status]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className={styles.panel}>
+          <h3>Department Distribution</h3>
+
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={departmentData} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" allowDecimals={false} />
+              <YAxis dataKey="department" type="category" width={100} />
+              <Tooltip />
+
+              <Bar dataKey="employees" radius={[0, 8, 8, 0]}>
+                {departmentData.map((entry, index) => (
+                  <Cell
+                    key={entry.department}
+                    fill={DEPARTMENT_COLORS[index % DEPARTMENT_COLORS.length]}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </MainLayout>
   );
