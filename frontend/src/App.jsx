@@ -1,9 +1,13 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthProvider";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
+
 import LoginPage from "./pages/Login/LoginPage";
 import DashboardPage from "./pages/Dashboard/DashboardPage";
 import EmployeesPage from "./pages/Employees/EmployeesPage";
+import SalaryPage from "./pages/Salary/SalaryPage";
+import AttendancePage from "./pages/Attendance/AttendancePage";
+import PayrollPage from "./pages/Payroll/PayrollPage";
 
 export default function App() {
   return (
@@ -11,10 +15,15 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/employees" element={<EmployeesPage />} />
+            <Route path="/salary" element={<SalaryPage />} />
+            <Route path="/attendance" element={<AttendancePage />} />
+            <Route path="/payroll" element={<PayrollPage />} />
           </Route>
+
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </BrowserRouter>
