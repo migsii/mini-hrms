@@ -10,6 +10,15 @@ use Illuminate\Http\Request;
 class SalaryController extends Controller
 {
     /**
+     * Display a listing of all salary configurations.
+     */
+    public function index()
+    {
+        $salaries = Salary::with('employee')->get();
+
+        return response()->json($salaries, 200);
+    }
+    /**
      * Store a newly created salary configuration for an employee.
      */
     public function store(Request $request)

@@ -24,6 +24,7 @@ Route::get('/user', function (Request $request) {
 Route::apiResource('employees', EmployeeController::class);
 
 // Employee Salary Mapping Endpoints
+Route::get('salaries', [SalaryController::class, 'index']);
 Route::post('salaries', [SalaryController::class, 'store']);
 Route::put('salaries/{employee_id}', [SalaryController::class, 'update']);
 Route::get('salaries/{employee_id}', [SalaryController::class, 'show']);
